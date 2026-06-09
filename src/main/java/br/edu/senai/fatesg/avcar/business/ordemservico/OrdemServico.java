@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class OrdemServico extends BaseModel {
     private Veiculo veiculo;
     private StatusOrdemServico status;
     private LocalDate dataAbertura;
-    private LocalDate dataFinalizacao;
+    private LocalDateTime dataFinalizacao;
     private LocalDate entradaVeiculo;
     private String defeitoRelatado;
     private int quantidadePecas;

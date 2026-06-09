@@ -2,7 +2,7 @@ package br.edu.senai.fatesg.avcar.business.ordemservico;
 
 import br.edu.senai.fatesg.avcar.core.exceptions.NegocioException;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 // PADRÃO TEMPLATE METHOD: Define o esqueleto de um algoritmo em uma operação,
 // postergando alguns passos para subclasses. Aplicado aqui para fixar o fluxo
@@ -24,7 +24,7 @@ public abstract class OrdemServicoTemplate {
         StatusOrdemServico proximo = proximoStatus(os.getStatus());
         os.setStatus(proximo);
         if (proximo == StatusOrdemServico.FINALIZADA) {
-            os.setDataFinalizacao(LocalDate.now());
+            os.setDataFinalizacao(LocalDateTime.now());
         }
         recalcularValor(os);
     }

@@ -86,7 +86,7 @@ public class OrdemServicoService {
             throw new NegocioException("Valor total da OS deve ser positivo");
         }
         os.setStatus(StatusOrdemServico.FINALIZADA);
-        os.setDataFinalizacao(LocalDate.now());
+        os.setDataFinalizacao(LocalDateTime.now());
         repository.atualizar(os);
         return OrdemServicoDTO.from(os);
     }
@@ -237,7 +237,7 @@ public class OrdemServicoService {
 
     public List<GarantiaDTO> calcularGarantia(Long id) {
         OrdemServico os = carregar(id);
-        LocalDate dataFim = os.getDataFinalizacao();
+        LocalDate dataFim = os.getDataFinalizacao() != null ? os.getDataFinalizacao().toLocalDate() : null;
         List<GarantiaDTO> lista = new ArrayList<>();
 
         for (var item : repository.listarItensServico(id)) {

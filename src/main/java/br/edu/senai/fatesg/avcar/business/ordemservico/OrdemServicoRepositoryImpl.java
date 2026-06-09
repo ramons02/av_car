@@ -52,8 +52,8 @@ public class OrdemServicoRepositoryImpl implements IOrdemServicoRepository {
         os.setVeiculo(veiculo);
         os.setEntradaVeiculo(rs.getDate("entradaveiculo") != null ? rs.getDate("entradaveiculo").toLocalDate() : null);
         os.setDataAbertura(rs.getDate("dataabertura").toLocalDate());
-        if (rs.getDate("datafechamento") != null)
-            os.setDataFinalizacao(rs.getDate("datafechamento").toLocalDate());
+        if (rs.getTimestamp("datafechamento") != null)
+            os.setDataFinalizacao(rs.getTimestamp("datafechamento").toLocalDateTime());
         os.setDefeitoRelatado(rs.getString("defeitorelatado"));
         os.setQuantidadePecas(rs.getInt("quantidadepecas"));
         os.setValorTotalPecas(rs.getDouble("valortotalpecas"));

@@ -117,7 +117,7 @@ CREATE TABLE ordemservico (
     numeroos INTEGER,
     entradaveiculo DATE,
     dataabertura DATE NOT NULL DEFAULT CURRENT_DATE,
-    datafechamento DATE,
+    datafechamento TIMESTAMP,
     defeitorelatado TEXT,
     quantidadepecas INTEGER DEFAULT 0,
     valortotalpecas DECIMAL(10,2) DEFAULT 0,

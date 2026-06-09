@@ -29,7 +29,7 @@ public class OrdemServicoDTO extends BaseDTO {
     private Integer numeroOs;
     private String veiculo;
     private LocalDate dataAberturaLegado;
-    private LocalDate dataFinalizacao;
+    private LocalDateTime dataFinalizacao;
     private LocalDate entradaVeiculo;
     private String defeitoRelatado;
     private int quantidadePecas;
