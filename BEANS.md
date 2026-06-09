@@ -1,6 +1,6 @@
-# Guia de Execução no NetBeans — AV-CAR Auto Center
+# Guia de Execução — AV-CAR Auto Center
 
-Passo a passo para abrir, configurar e executar o projeto no Apache NetBeans.
+Passo a passo para baixar do GitHub, configurar o banco com pgAdmin e executar **API + Swing** com um único comando (faculdade/lab).
 
 ---
 
@@ -8,105 +8,62 @@ Passo a passo para abrir, configurar e executar o projeto no Apache NetBeans.
 
 | Ferramenta | Versão | Como verificar |
 |------------|--------|----------------|
-| **NetBeans** | 21+ (recomendo Apache NetBeans 22+) | `Help → About` |
+| **Git** | qualquer | `git --version` |
 | **JDK** | 21+ | `java -version` |
-| **Maven** | 3.8+ (NetBeans já embute um) | — |
+| **Maven** | 3.8+ | `mvn -version` |
 | **PostgreSQL** | 16+ | `psql --version` |
-| **Docker** (opcional) | 24+ | `docker --version` |
+| **pgAdmin** | 4+ | Acompanha o PostgreSQL |
 
 ---
 
-## 1. Abrir o projeto no NetBeans
-
-1. **File → Open Project** (ou `Ctrl+Shift+O`)
-2. Navegue até `/home/ramon/Documentos/av_car/`
-3. Selecione a pasta `av_car` e clique **Open Project**
-
-O NetBeans reconhecerá automaticamente o `pom.xml` como um projeto Maven single-module. No painel **Projects** (`Ctrl+1`) você verá:
-
-```
-av-car
-├── Source Packages
-│   └── br.edu.senai.fatesg.avcar
-│       ├── AvCarApplication.java     ← API entrypoint
-│       ├── controllers/
-│       ├── services/
-│       ├── repositories/
-│       ├── model/
-│       ├── validations/
-│       ├── patterns/
-│       ├── exceptions/
-│       ├── helpers/
-│       ├── config/
-│       ├── datastructures/           ← Fila, ordenação, recursão
-│       └── swing/
-│           ├── AvCarSwingApp.java    ← Swing entrypoint
-│           ├── client/
-│           └── views/
-├── Other Sources
-│   └── src/main/resources
-│       ├── application.yml
-│       └── db/
-│           ├── schema.sql
-│           └── seed.sql
-└── Dependencies
-```
-
-> Se aparecer uma janela "Project not recognized", clique em **Open as Project** e escolha **Maven**.
-
----
-
-## 2. Verificar JDK e configuração
-
-1. **Tools → Java Platforms** → confirme que há um JDK 21+ registrado
-2. Clique com botão direito no projeto `av-car` → **Properties**:
-   - **Build → Compile**: Java Platform = JDK 21, Source/Binary Format = 21
-   - **Run**: aqui você define qual main class será executada ao pressionar F6
-
-O projeto tem **duas main classes**:
-
-| Main Class | Propósito | Comando |
-|-----------|-----------|---------|
-| `br.edu.senai.fatesg.avcar.AvCarApplication` | API REST (Spring Boot) | `mvn spring-boot:run` |
-| `br.edu.senai.fatesg.avcar.swing.AvCarSwingApp` | Interface desktop (Swing) | `mvn exec:java -Pswing` |
-
----
-
-## 3. Configurar o banco PostgreSQL
-
-### Opção A — Docker (recomendado)
-
-Abra o **Terminal** no NetBeans (`Window → IDE Tools → Terminal`) ou use um externo:
+## 1. Baixar o projeto do GitHub
 
 ```bash
-docker run --name avcar-postgres \
-  -e POSTGRES_DB=avcar \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -p 5432:5432 \
-  -d postgres:16-alpine
+git clone <url-do-repositorio>
+cd av-car
 ```
 
-### Opção B — PostgreSQL local
-
-```bash
-psql -U postgres -c "CREATE DATABASE avcar;"
-```
-
-### Criar tabelas e dados iniciais
-
-```bash
-docker exec -i avcar-postgres psql -U postgres -d avcar < src/main/resources/db/schema.sql
-docker exec -i avcar-postgres psql -U postgres -d avcar < src/main/resources/db/seed.sql
-```
-
-> Se estiver usando PostgreSQL local, substitua `docker exec -i avcar-postgres psql` por `psql`.
+Sem Git? Baixe o ZIP: **Code → Download ZIP** no GitHub, extraia e entre na pasta.
 
 ---
 
-## 4. Verificar application.yml
+## 2. Configurar o banco PostgreSQL com pgAdmin
 
-O arquivo fica em `src/main/resources/application.yml`. A configuração padrão é:
+Use o **pgAdmin** para criar o banco e rodar os scripts — sem precisar de terminal.
+
+### 2.1 Abrir e conectar no pgAdmin
+
+| Sistema | Como abrir |
+|---------|------------|
+| **Windows** | Iniciar → pgAdmin 4 |
+
+1. Clique direito em **Servers → Register → Server**
+2. Aba **General**: nome qualquer (ex: `Local`)
+3. Aba **Connection**:
+   - Host: `localhost`
+   - Port: `5432`
+   - Username: `postgres`
+   - Password: *(a senha que você definiu na instalação)*
+4. **Save**
+
+### 2.2 Criar o banco
+
+Clique direito em **Databases → Create → Database** → Nome: `avcar` → Owner: `postgres` → **Save**
+
+### 2.3 Rodar os scripts SQL
+
+1. Clique direito em **public → Query Tool**
+2. Clique no ícone **Open File** (pasta) → selecione `db/schema.sql`
+3. Execute (⚡)
+4. Repita com `db/seed.sql`
+
+Pronto — banco criado com 18 tabelas e dados iniciais.
+
+---
+
+## 3. Configurar senha no application.yml
+
+Arquivo: `src/main/resources/application.yml`
 
 ```yaml
 spring:
@@ -118,80 +75,49 @@ server:
   port: 8080
 ```
 
-Altere `username` e `password` conforme sua instalação local do PostgreSQL.
+Troque `password` pela senha do seu PostgreSQL.
 
 ---
 
-## 5. Compilar o projeto
+## 4. Rodar no NetBeans
 
-Clique com botão direito no projeto `av-car` → **Clean and Build**
-(ou pressione `Shift+F11`)
+### 4.1 Rodar a API
 
-O NetBeans executará `mvn clean package -DskipTests`. A saída aparecerá no painel **Output** (`Ctrl+4`).
-
-> Se houver erro de compilação, verifique o JDK configurado no passo 2.
-
----
-
-## 6. Executar a API (Spring Boot)
-
-### Método A — Run Project (F6)
-
-1. Botão direito no projeto `av-car` → **Properties** → **Run**
-2. Em **Main Class**: digite `br.edu.senai.fatesg.avcar.AvCarApplication`
-3. Clique **OK**
-4. Pressione `F6` (ou clique no botão **Run Project** na toolbar)
-
-### Método B — Maven goal (recomendado)
-
-1. Botão direito no projeto → **Run Maven** → **Custom...**
+1. Botão direito no projeto `av-car` → **Run Maven** → **Custom...**
 2. Em **Goals**: digite `spring-boot:run`
 3. Clique **OK**
 
-A API sobe em `http://localhost:8080`. Para testar, abra o navegador e acesse `http://localhost:8080/api/clientes`.
+A API sobe em `http://localhost:8080`. Deixe rodando.
 
-> Para parar: clique no botão **Stop** (quadrado vermelho) no painel **Output**.
+### 4.2 Rodar o Swing
 
----
+Com a API já rodando (passo 4.1):
 
-## 7. Executar o Swing (interface gráfica)
-
-**⚠️ A API precisa estar rodando primeiro** (passo 6). O Swing depende da API para carregar dados.
-
-### Método A — Maven com profile swing
-
-1. Botão direito no projeto → **Run Maven** → **Custom...**
+1. Botão direito no projeto `av-car` → **Run Maven** → **Custom...**
 2. Em **Goals**: digite `compile exec:java -Pswing`
 3. Clique **OK**
 
-Isso compila e executa a classe `AvCarSwingApp` com todas as dependências no classpath.
+A janela do Swing vai abrir.
 
-### Método B — Run Project com main class alternativa
-
-1. API já rodando em outro terminal ou run
-2. Botão direito no projeto → **Properties** → **Run**
-3. Em **Main Class**: troque para `br.edu.senai.fatesg.avcar.swing.AvCarSwingApp`
-4. Clique **OK** e pressione `F6`
-
-**Importante:** Lembre de trocar a Main Class de volta para `AvCarApplication` quando quiser rodar a API novamente.
-
-### Método C — JAR com shade plugin (para testes)
-
-```bash
-mvn clean package -Pswing -DskipTests
-java -jar target/av-car-1.0.0.jar
-```
+> Dica: deixe a API rodando em segundo plano e execute o Swing em outra aba do Output.
 
 ---
 
-## 8. Dica: executar ambos de uma vez
+## 5. Rodar pelo terminal (cmd/PowerShell)
 
-Crie duas configurações de Run no NetBeans:
+Se preferir rodar fora do NetBeans, abra o **Prompt de Comando** ou **PowerShell** na pasta do projeto:
 
-1. **Serviço**: `spring-boot:run` (goal Maven)
-2. **Swing**: `compile exec:java -Pswing` (goal Maven)
+```cmd
+:: Terminal 1 — API
+mvn spring-boot:run
+```
 
-Use o seletor de configuração na toolbar para alternar entre elas sem precisar reconfigurar.
+```cmd
+:: Terminal 2 (com a API rodando) — Swing
+mvn compile exec:java -Pswing
+```
+
+---
 
 ---
 
@@ -199,60 +125,12 @@ Use o seletor de configuração na toolbar para alternar entre elas sem precisar
 
 | Problema | Solução |
 |----------|---------|
-| **"Java platform missing"** | Tools → Java Platforms → Add Platform → selecione o JDK 21 |
-| **"Cannot find symbol"** | Clean and Build novamente; verifique JDK 21 |
-| **"Connection refused"** | PostgreSQL não está rodando: `docker ps \| grep avcar` |
-| **Porta 8080 ocupada** | Altere `server.port` em `application.yml` |
-| **Swing não abre / janela aparece e some** | Classpath sem Jackson: use `mvn compile exec:java -Pswing` em vez de executar direto |
-| **Swing não abre (sem display)** | Verifique ambiente gráfico: `echo $DISPLAY`. Em WSL, use `xming` ou `vcxsrv` |
-| **Erro Maven no NetBeans** | Botão direito no projeto → **Reload Project** |
-| **Build lento** | Primeira vez com Maven (baixando dependências). Próximas serão mais rápidas. |
-
----
-
-## Estrutura de diretórios (referência)
-
-```
-av-car/
-├── pom.xml                         ← Maven single-module
-├── BEANS.md                        ← Este guia
-├── src/main/java/br/edu/senai/fatesg/avcar/
-│   ├── AvCarApplication.java       ← API entrypoint
-│   ├── controllers/                ← REST endpoints
-│   ├── services/                   ← Regras de negócio
-│   ├── repositories/               ← Persistência (JdbcTemplate)
-│   ├── model/                      ← Entidades + DTOs
-│   ├── validations/                ← Validadores
-│   ├── patterns/                   ← Design patterns (GoF)
-│   ├── exceptions/                 ← Exceções customizadas
-│   ├── helpers/                    ← Utilitários
-│   ├── config/                     ← Beans Spring
-│   ├── datastructures/             ← Estruturas de Dados I
-│   │   ├── FilaEsperaOS.java       ← Fila circular genérica
-│   │   ├── OrdenacaoOS.java        ← MergeSort + QuickSort manuais
-│   │   └── CalculoOS.java          ← Funções recursivas
-│   └── swing/
-│       ├── AvCarSwingApp.java      ← Swing entrypoint
-│       ├── client/ApiClient.java   ← HTTP client
-│       └── views/                  ← Janelas (JFrame, JDialog, JPanel)
-└── src/main/resources/
-    ├── application.yml             ← Config Spring Boot
-    └── db/
-        ├── schema.sql              ← DDL — 18 tabelas
-        └── seed.sql                ← Dados iniciais
-```
-
----
-
-## Resumo rápido
-
-```bash
-# 1. Subir banco
-docker start avcar-postgres
-
-# 2. Rodar API
-mvn spring-boot:run
-
-# 3. Rodar Swing (outro terminal, com API já rodando)
-mvn compile exec:java -Pswing
-```
+| **`java' não é reconhecido`** | Instale o JDK 21 e configure a variável `JAVA_HOME` |
+| **`mvn' não é reconhecido`** | Instale o Maven e adicione ao `PATH` |
+| **"Connection refused"** | PostgreSQL não está rodando — abra o pgAdmin e veja se o servidor está verde |
+| **"database 'avcar' does not exist"** | Esqueceu de criar o banco no pgAdmin — volte ao passo 2.2 |
+| **"relation 'cliente' does not exist"** | Esqueceu de executar o schema.sql — volte ao passo 2.3 |
+| **Porta 8080 ocupada** | Altere `server.port` no `application.yml` |
+| **Swing não abre** | Verifique se a API está rodando primeiro (passo 4.1) |
+| **pgAdmin não conecta** | PostgreSQL não foi iniciado — procure por **pgAdmin** ou **Services** no Windows e inicie o PostgreSQL |
+| **Git não encontrado** | Baixe o ZIP manualmente do GitHub |
