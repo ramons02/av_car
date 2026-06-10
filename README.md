@@ -17,8 +17,12 @@
 |------|---------|
 | Setup do zero (faculdade) | `SETUP.md` |
 | Execução no NetBeans | `BEANS.md` |
-| Documento técnico (Estruturas de Dados) | `docs/technical/documento-tecnico-estrutura-dados.md` |
+| Documento técnico (Estruturas de Dados) — PDF | `docs/technical/documento-tecnico-estrutura-dados.pdf` |
+| Documento técnico (Estruturas de Dados) — MD | `docs/technical/documento-tecnico-estrutura-dados.md` |
 | Especificação completa do sistema | `docs/specs/especificacao-sistema.md` |
+| ADR — Fila Circular | `docs/adr/ADR-001-fila-circular.md` |
+| ADR — MergeSort | `docs/adr/ADR-002-merge-sort.md` |
+| ADR — Recursão | `docs/adr/ADR-003-recursao-calculo.md` |
 
 ---
 
@@ -29,14 +33,17 @@ estruturas e algoritmos para a disciplina de **Estrutura de Dados I**:
 
 | Estrutura | Arquivo | Onde é usada |
 |-----------|---------|--------------|
-| **Fila Circular** (`FilaEsperaOS<T>`) | `datastructures/FilaEsperaOS.java` | `FilaEsperaDialog` — fila de espera de OS no Swing |
-| **MergeSort** (`mergeSort()`) | `datastructures/OrdenacaoOS.java` | Disponivel para ordenação estável de relatórios |
+| **Fila Circular** (`FilaEsperaOS<OrdemServicoDTO>`) | `datastructures/FilaEsperaOS.java` | `FilaEsperaDialog` — fila de espera de OS com combo box seletor |
+| **MergeSort** (`mergeSort()`) | `datastructures/OrdenacaoOS.java` | Disponível para ordenação estável de relatórios |
 | **QuickSort** (`quickSort()`) | `datastructures/OrdenacaoOS.java` | `OrdemServicoPanel` — ordenação ao clicar no cabeçalho da tabela |
-| **Recursão** (`somarValores`, `fatorial`) | `datastructures/CalculoOS.java` | Cálculo recursivo de totais da OS |
+| **Busca Linear** (`buscaLinear()`) | `datastructures/BuscaOS.java` | `OrdemServicoPanel` — localizar OS por placa/número/status |
+| **Busca Binária** (`buscaBinaria()`) | `datastructures/BuscaOS.java` | Disponível para busca exata em listas ordenadas |
+| **Recursão** (`somarValores`, `fatorial`, `calcularValorTotal`) | `datastructures/CalculoOS.java` | `ItensOSDialog` — rodapé com totais recursivos de serviços, peças e externos |
 
 Todas as implementações são **manuais** — sem uso de `Collections.sort`, `Arrays.sort`,
 `Stream.sorted` ou `List.sort`. Detalhes completos no
-[documento técnico](docs/technical/documento-tecnico-estrutura-dados.md).
+[documento técnico](docs/technical/documento-tecnico-estrutura-dados.md)
+([PDF](docs/technical/documento-tecnico-estrutura-dados.pdf)).
 
 ---
 
@@ -212,7 +219,7 @@ O sistema deve permitir desativação lógica de clientes, veículos, colaborado
 
 ## ix. Descrição dos Dados do Sistema
 
-### Tabelas do Banco de Dados (18 tabelas)
+### Tabelas do Banco de Dados (21 tabelas)
 
 #### `marca`
 | Coluna | Tipo | Descrição |
@@ -513,7 +520,7 @@ servico_externo (id, ordem_servico_id FK → ordem_servico,
 
 ### Modelo Físico
 
-O script DDL completo encontra-se em `db/schema.sql` (18 tabelas, ~190 linhas). Inclui:
+O script DDL completo encontra-se em `db/schema.sql` (21 tabelas, ~240 linhas). Inclui:
 
 - Constraints `NOT NULL`, `UNIQUE`, `PRIMARY KEY`, `FOREIGN KEY`
 - `CHECK` constraint para `cliente.tipo IN ('PF', 'PJ')`
