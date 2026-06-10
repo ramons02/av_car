@@ -18,9 +18,10 @@ Estrutura de Dados I.
 
 **Onde:** `src/main/java/br/edu/senai/fatesg/avcar/datastructures/FilaEsperaOS.java`
 
-**Propósito:** Gerenciar ordens de serviço que estão no status "Aguardando Peça".
-Quando uma peça chega ao estoque, a OS que está há mais tempo esperando é
-automaticamente notificada para retornar à execução.
+**Propósito:** Gerenciar ordens de serviço que aguardam atendimento na oficina,
+mantendo a ordem FIFO de chegada. A fila armazena objetos completos
+`OrdemServicoDTO` (não apenas identificadores textuais), exibindo na interface
+número da OS, placa/veículo e status atual.
 
 **Justificativa:** O modelo FIFO reflete o comportamento real de uma oficina:
 a primeira OS que fica aguardando peça deve ser a primeira a ser retomada quando
@@ -106,25 +107,40 @@ elemento central como pivô.
 
 ### 3.1 Fila de Espera na Interface Swing
 
-A aba "Ordens de Serviço" ganha um botão **"Fila de Espera"** que abre
-`FilaEsperaDialog` — um diálogo que exibe a fila atual de OSs aguardando peça,
-com opções para:
-- **Adicionar à fila**: Coloca a OS selecionada na fila (se estiver em
-  "Aguardando Peça")
-- **Remover da fila**: Retira a OS da fila e avança para "Orçamento"
-  (peça chegou)
-- **Ver próxima**: Mostra qual é a próxima OS a ser processada
+A aba "Ordens de Serviço" possui um botão **"Fila de Espera"** na toolbar que
+abre `FilaEsperaDialog` — um diálogo que gerencia a fila de OSs aguardando
+atendimento utilizando `FilaEsperaOS<OrdemServicoDTO>` (fila circular tipada
+com o objeto completo, não apenas String):
+
+- **Selecionar OS via ComboBox**: O diálogo carrega todas as OSs do sistema
+  em um `JComboBox<OrdemServicoDTO>` com renderizador customizado exibindo
+  `#NÚMERO | PLACA - MODELO | STATUS`
+- **Adicionar (Enqueue)**: Insere a OS selecionada no final da fila
+- **Remover (Dequeue)**: Retira a OS mais antiga e exibe seus dados completos
+  na mensagem de confirmação
+- **Próximo (Peek)**: Consulta a primeira OS sem remover, mostrando número,
+  veículo e status
+- **Limpar Tudo**: Esvazia a fila completamente
 
 ### 3.2 Ordenação na Interface Swing
 
 Cada painel com JTable (Clientes, OS, Peças, etc.) ganha a opção de ordenar
 as colunas clicando no cabeçalho, usando o MergeSort implementado.
 
-### 3.3 Cálculo Recursivo na Finalização da OS
+### 3.3 Cálculo Recursivo no Gerenciamento de Itens
 
-Quando uma OS é finalizada, o `OrdemServicoService.finalizar()` chama
-`CalculoOS.calcularValorTotal()` para exibir o detalhamento no diálogo de
-confirmação.
+O diálogo `ItensOSDialog` (gerenciamento de serviços, peças e serviços
+externos de uma OS) exibe um **rodapé com os totais calculados
+recursivamente** via `CalculoOS`:
+
+- `CalculoOS.somarValores(lista, 0)` — percorre recursivamente cada lista
+  de valores (serviços, peças, externos) somando item a item
+- `CalculoOS.calcularValorTotal(...)` — integra as três somas recursivas
+  em um único valor total, exibido no formato:
+  `Serviços: R$ X.XX | Peças: R$ X.XX | Externos: R$ X.XX | TOTAL: R$ X.XX`
+
+O rodapé é atualizado automaticamente sempre que um item é adicionado ou
+removido, sem necessidade de recarregar a página.
 
 ## 4. Estrutura de Diretórios (nova)
 

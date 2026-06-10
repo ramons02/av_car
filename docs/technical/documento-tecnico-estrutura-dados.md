@@ -25,10 +25,15 @@
 
 A fila circular é utilizada no módulo **Swing** como uma **fila de espera de ordens de serviço**. A oficina pode colocar OSs em espera (ex.: aguardando peça, aguardando liberação do cliente) e retirá-las na ordem FIFO quando estiverem prontas para prosseguir.
 
+A fila é tipada como `FilaEsperaOS<OrdemServicoDTO>`, armazenando objetos
+completos de ordem de serviço — não apenas identificadores textuais. Isso
+permite exibir na interface informações como número, placa/veículo e status.
+
 O diálogo `FilaEsperaDialog` (em `swing/views/FilaEsperaDialog.java`) gerencia a fila com interface visual:
 
-- **Enqueue**: adiciona número da OS ao final da fila
-- **Dequeue**: remove a OS mais antiga da fila
+- **Seleção via ComboBox**: todas as OSs do sistema são carregadas em um `JComboBox<OrdemServicoDTO>` com renderizador customizado exibindo `#NÚMERO | PLACA - MODELO | STATUS`
+- **Enqueue**: adiciona a OS selecionada ao final da fila
+- **Dequeue**: remove a OS mais antiga e exibe seus dados na mensagem
 - **Peek**: consulta a primeira OS sem remover
 - **Clear**: esvazia a fila
 
@@ -374,7 +379,15 @@ private void buscarOS(String termo) {
 
 ## 5. Funções Recursivas — `CalculoOS`
 
-### 4.1 Onde foi utilizada
+### 5.1 Onde foi utilizada
+
+As funções recursivas do `CalculoOS` são utilizadas no diálogo `ItensOSDialog`
+(gerenciamento de itens de serviço, peças e serviços externos de uma OS) para
+exibir os totais no rodapé da janela.
+
+O método `atualizarTotal()` extrai os valores das tabelas, alimenta listas de
+`Double` e invoca `CalculoOS.somarValores()` (recursivo) para cada categoria,
+além de `CalculoOS.calcularValorTotal()` para o total geral com desconto.
 
 A classe `CalculoOS` contém funções puramente recursivas que demonstram o paradigma de recursão aplicado a problemas reais da oficina:
 
@@ -396,7 +409,32 @@ A classe `CalculoOS` contém funções puramente recursivas que demonstram o par
 | **Passo recursivo** | `lista.get(indice) + somarValores(lista, indice + 1)` para soma; `n * fatorial(n - 1)` para fatorial |
 | **Aplicação real** | `somarValores` é usado por `calcularValorTotal` que integra todas as três categorias de custo de uma OS |
 
-### 4.3 Trechos relevantes
+### 5.3 Trechos relevantes
+
+**Integração no ItensOSDialog — extração de valores e chamada recursiva:**
+
+```java
+private void atualizarTotal() {
+    List<Double> valsServicos = new ArrayList<>();
+    for (int i = 0; i < modelServicos.getRowCount(); i++)
+        valsServicos.add(parseValor(modelServicos.getValueAt(i, 4)));
+
+    List<Double> valsPecas = new ArrayList<>();
+    for (int i = 0; i < modelPecas.getRowCount(); i++)
+        valsPecas.add(parseValor(modelPecas.getValueAt(i, 4)));
+
+    List<Double> valsExternos = new ArrayList<>();
+    for (int i = 0; i < modelExternos.getRowCount(); i++)
+        valsExternos.add(parseValor(modelExternos.getValueAt(i, 3)));
+
+    double total = CalculoOS.calcularValorTotal(valsServicos, valsPecas, valsExternos, 0);
+    lblTotal.setText(String.format(
+        "Serviços: R$ %.2f  |  Peças: R$ %.2f  |  Externos: R$ %.2f  |  TOTAL: R$ %.2f",
+        CalculoOS.somarValores(valsServicos, 0),
+        CalculoOS.somarValores(valsPecas, 0),
+        CalculoOS.somarValores(valsExternos, 0), total));
+}
+```
 
 **Somador recursivo — percorre a lista do índice até o final:**
 
@@ -438,14 +476,34 @@ public static long fatorial(int n) {
 
 ### 6.1 Fila de Espera — `FilaEsperaDialog`
 
-O diálogo `FilaEsperaDialog` utiliza uma instância **estática** de `FilaEsperaOS<String>` que persiste durante toda a sessão do Swing. O botão **"Fila de Espera"** foi adicionado à toolbar do painel de Ordens de Serviço (`OrdemServicoPanel`):
+O diálogo `FilaEsperaDialog` utiliza uma instância **estática** de `FilaEsperaOS<OrdemServicoDTO>` que persiste durante toda a sessão do Swing. Diferentemente da versão anterior (que armazenava apenas `String` com o número da OS), a fila agora armazena objetos completos de `OrdemServicoDTO`, permitindo exibir na interface informações como número, veículo e status.
+
+A seleção da OS a ser enfileirada é feita por um `JComboBox<OrdemServicoDTO>` com renderizador customizado, populado a partir do `OrdemServicoController.listar()`.
+
+O botão **"Fila de Espera"** na toolbar do painel de Ordens de Serviço (`OrdemServicoPanel`) agora passa o controller para o diálogo:
 
 ```java
 // OrdemServicoPanel.java
 JButton btnFila = new JButton("Fila de Espera");
 toolbar.add(btnFila);
 btnFila.addActionListener(e ->
-    FilaEsperaDialog.showDialog(SwingUtilities.getWindowAncestor(this)));
+    FilaEsperaDialog.showDialog(SwingUtilities.getWindowAncestor(this),
+        ordemServicoController));
+```
+
+**Renderizador customizado do ComboBox:**
+
+```java
+comboOS.setRenderer(new DefaultListCellRenderer() {
+    @Override
+    public Component getListCellRendererComponent(...) {
+        if (value instanceof OrdemServicoDTO os) {
+            setText(String.format("#%d | %s | %s",
+                os.getNumeroOs(), os.getVeiculo(), os.getStatus()));
+        }
+        return c;
+    }
+});
 ```
 
 ### 6.2 Ordenação por Cabeçalho de Tabela
@@ -481,6 +539,37 @@ private void ordenarTabela(int col) {
 
 O campo de busca utiliza `BuscaOS.buscaLinear()` para localizar a primeira OS que contenha o termo digitado (por placa/veículo, número ou status). Quando encontrada, a linha é selecionada e a tabela rola automaticamente até ela.
 
+### 6.4 Cálculo Recursivo no Gerenciamento de Itens — `ItensOSDialog`
+
+O diálogo `ItensOSDialog`, responsável por gerenciar os itens de serviço,
+peças e serviços externos de uma ordem de serviço, exibe no **rodapé da janela**
+os totais calculados exclusivamente por funções recursivas do `CalculoOS`.
+
+O método `atualizarTotal()` é chamado automaticamente após cada operação
+(adicionar ou remover item) nos três métodos de carregamento
+(`carregarServicos()`, `carregarPecas()`, `carregarExternos()`):
+
+```java
+private void atualizarTotal() {
+    // Extrai valores das tabelas e alimenta listas
+    List<Double> valsServicos = /* ... */;
+    List<Double> valsPecas = /* ... */;
+    List<Double> valsExternos = /* ... */;
+
+    // Invoca funções recursivas do CalculoOS
+    double total = CalculoOS.calcularValorTotal(
+        valsServicos, valsPecas, valsExternos, 0);
+
+    lblTotal.setText(String.format(
+        "Serviços: R$ %.2f  |  Peças: R$ %.2f  |  " +
+        "Externos: R$ %.2f  |  TOTAL: R$ %.2f",
+        CalculoOS.somarValores(valsServicos, 0),
+        CalculoOS.somarValores(valsPecas, 0),
+        CalculoOS.somarValores(valsExternos, 0),
+        total));
+}
+```
+
 ---
 
 ## 7. Justificativas Técnicas Consolidadas
@@ -494,7 +583,7 @@ O campo de busca utiliza `BuscaOS.buscaLinear()` para localizar a primeira OS qu
 | **QuickSort** | Ordenação in-place na UI | O(n log n) médio; ordena in-place; resposta rápida ao clique do usuário | MergeSort (memória extra O(n)); BubbleSort (O(n²) lento) |
 | **Busca Linear** | Localizar OS por placa, número ou status | Busca textual parcial case-insensitive; não exige pré-ordenação; O(n) direto | `HashMap` (não demonstra implementação manual); `Stream.filter` (proibido) |
 | **Busca Binária** | Localizar OS exata em lista ordenada | O(log n) eficiente; didático para ensino de divisão e conquista | `Collections.binarySearch` (proibido) |
-| **Recursão (soma)** | Cálculo de totais de OS | Didático para demonstrar recursão; caso base + passo recursivo claros | Laço `for` (não demonstra recursão) |
+| **Recursão (soma)** | Cálculo de totais de OS no `ItensOSDialog` | Didático para demonstrar recursão; caso base + passo recursivo claros; integrado ao rodapé da interface | Laço `for` (não demonstra recursão) |
 | **Recursão (fatorial)** | Permutações de agendamento | Função clássica para ensino de recursão | Iteração (não atende ao requisito) |
 
 ### Complexidades

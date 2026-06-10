@@ -100,7 +100,7 @@ public class OrdemServicoPanel extends JPanel {
         btnGarantia.addActionListener(e -> aplicarGarantia());
         btnVerGarantia.addActionListener(e -> verGarantia());
         btnDesconto.addActionListener(e -> aplicarDesconto());
-        btnFila.addActionListener(e -> FilaEsperaDialog.showDialog(SwingUtilities.getWindowAncestor(this)));
+        btnFila.addActionListener(e -> FilaEsperaDialog.showDialog(SwingUtilities.getWindowAncestor(this), ordemServicoController));
         btnBuscar.addActionListener(e -> buscarOS(tfBusca.getText().trim()));
         tfBusca.addActionListener(e -> buscarOS(tfBusca.getText().trim()));
 

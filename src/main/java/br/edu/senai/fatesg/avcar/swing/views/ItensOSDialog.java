@@ -12,10 +12,12 @@ import br.edu.senai.fatesg.avcar.business.pecas.ItemPecaDTO;
 import br.edu.senai.fatesg.avcar.business.servicos.ServicoController;
 import br.edu.senai.fatesg.avcar.business.servicos.ServicoDTO;
 import br.edu.senai.fatesg.avcar.business.servicos.ServicoExternoDTO;
+import br.edu.senai.fatesg.avcar.datastructures.CalculoOS;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ItensOSDialog extends JDialog {
@@ -33,6 +35,7 @@ public class ItensOSDialog extends JDialog {
     private final JTable tabServicos = new JTable();
     private final JTable tabPecas = new JTable();
     private final JTable tabExternos = new JTable();
+    private final JLabel lblTotal = new JLabel(" ");
 
     public ItensOSDialog(Window owner, OrdemServicoController ordemServicoController,
                          ServicoController servicoController, PecaController pecaController,
@@ -116,11 +119,16 @@ public class ItensOSDialog extends JDialog {
         abas.addTab("Serv. Externos", criarAbaExternos());
         add(abas, BorderLayout.CENTER);
 
+        JPanel south = new JPanel(new BorderLayout());
+        lblTotal.setFont(new Font("Monospaced", Font.BOLD, 13));
+        lblTotal.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+        south.add(lblTotal, BorderLayout.WEST);
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnFechar = new JButton("Fechar");
         btnFechar.addActionListener(e -> dispose());
         botoes.add(btnFechar);
-        add(botoes, BorderLayout.SOUTH);
+        south.add(botoes, BorderLayout.EAST);
+        add(south, BorderLayout.SOUTH);
     }
 
     private void carregarDados() {
@@ -142,6 +150,7 @@ public class ItensOSDialog extends JDialog {
                     });
                 }
             }
+            atualizarTotal();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erro ao carregar serviços: " + e.getMessage());
         }
@@ -163,6 +172,7 @@ public class ItensOSDialog extends JDialog {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erro ao carregar peças: " + e.getMessage());
         }
+        atualizarTotal();
     }
 
     private void carregarExternos() {
@@ -180,6 +190,39 @@ public class ItensOSDialog extends JDialog {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erro ao carregar serv. externos: " + e.getMessage());
         }
+        atualizarTotal();
+    }
+
+    private double parseValor(Object obj) {
+        if (obj == null) return 0;
+        try {
+            String s = obj.toString().replace("R$ ", "").replace(",", ".").trim();
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private void atualizarTotal() {
+        List<Double> valsServicos = new ArrayList<>();
+        for (int i = 0; i < modelServicos.getRowCount(); i++) {
+            valsServicos.add(parseValor(modelServicos.getValueAt(i, 4)));
+        }
+        List<Double> valsPecas = new ArrayList<>();
+        for (int i = 0; i < modelPecas.getRowCount(); i++) {
+            valsPecas.add(parseValor(modelPecas.getValueAt(i, 4)));
+        }
+        List<Double> valsExternos = new ArrayList<>();
+        for (int i = 0; i < modelExternos.getRowCount(); i++) {
+            valsExternos.add(parseValor(modelExternos.getValueAt(i, 3)));
+        }
+        double total = CalculoOS.calcularValorTotal(valsServicos, valsPecas, valsExternos, 0);
+        lblTotal.setText(String.format(
+            "Serviços: R$ %.2f  |  Peças: R$ %.2f  |  Externos: R$ %.2f  |  TOTAL: R$ %.2f",
+            CalculoOS.somarValores(valsServicos, 0),
+            CalculoOS.somarValores(valsPecas, 0),
+            CalculoOS.somarValores(valsExternos, 0),
+            total));
     }
 
     private void adicionarServico() {
