@@ -128,7 +128,7 @@ public class OrdemServicoPanel extends JPanel {
             case 0 -> Comparator.comparing(OrdemServicoDTO::getNumeroOs, Comparator.nullsLast(Comparator.naturalOrder()));
             case 1 -> Comparator.comparing(OrdemServicoDTO::getVeiculo, Comparator.nullsLast(String::compareTo));
             case 2 -> Comparator.comparing(OrdemServicoDTO::getStatus, Comparator.nullsLast(String::compareTo));
-            case 3 -> Comparator.comparing(OrdemServicoDTO::getDataAberturaLegado, Comparator.nullsLast(Comparator.naturalOrder()));
+            case 3 -> Comparator.comparing(OrdemServicoDTO::getDataAbertura, Comparator.nullsLast(Comparator.naturalOrder()));
             case 4 -> Comparator.comparing(OrdemServicoDTO::getEntradaVeiculo, Comparator.nullsLast(Comparator.naturalOrder()));
             case 5 -> Comparator.comparing(OrdemServicoDTO::getValorTotal, Comparator.nullsLast(Comparator.naturalOrder()));
             case 6 -> Comparator.comparing(OrdemServicoDTO::getValorDesconto, Comparator.nullsLast(Comparator.naturalOrder()));

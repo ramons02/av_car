@@ -374,6 +374,7 @@ public class ItensOSDialog extends JDialog {
             ordemServicoController.removerItemServico(osId, itemId);
             modified = true;
             modelServicos.removeRow(linha);
+            atualizarTotal();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erro ao remover: " + e.getMessage());
         }
@@ -392,6 +393,7 @@ public class ItensOSDialog extends JDialog {
             ordemServicoController.removerItemPeca(osId, itemId);
             modified = true;
             modelPecas.removeRow(linha);
+            atualizarTotal();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erro ao remover: " + e.getMessage());
         }
@@ -410,6 +412,7 @@ public class ItensOSDialog extends JDialog {
             ordemServicoController.removerServicoExterno(osId, itemId);
             modified = true;
             modelExternos.removeRow(linha);
+            atualizarTotal();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erro ao remover: " + e.getMessage());
         }

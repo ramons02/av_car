@@ -103,7 +103,8 @@ public class FilaEsperaDialog extends JDialog {
             }
             OrdemServicoDTO removido = FILA.dequeue();
             JOptionPane.showMessageDialog(this,
-                String.format("Removido: #%d | %s", removido.getNumeroOs(), removido.getVeiculo()));
+                String.format("Removido: #%d | %s | %s",
+                    removido.getNumeroOs(), removido.getVeiculo(), removido.getStatus()));
             atualizarLista();
         });
 
@@ -114,7 +115,8 @@ public class FilaEsperaDialog extends JDialog {
             }
             OrdemServicoDTO prox = FILA.peek();
             JOptionPane.showMessageDialog(this,
-                String.format("Próximo: #%d | %s | %s", prox.getNumeroOs(), prox.getVeiculo(), prox.getStatus()));
+                String.format("Próximo: #%d | %s | %s",
+                    prox.getNumeroOs(), prox.getVeiculo(), prox.getStatus()));
         });
 
         btnLimpar.addActionListener(e -> {
