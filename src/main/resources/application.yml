@@ -6,7 +6,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/avcar
     username: postgres
-    password: Ra28041996
+    password: postgres
     driver-class-name: org.postgresql.Driver
   jackson:
     date-format: yyyy-MM-dd
